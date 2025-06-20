@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gita AI Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/geist-font/1.0.0/fonts/geist-sans/style.min.css" />
+  <style>
+    body {
+      font-family: 'Geist Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fffdf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #chat-widget-container {
+      width: 90%;
+      max-width: 450px;
+      height: 80vh;
+      background: #fff8e7;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #f0e6d2;
+    }
+
+    #chat-widget-header {
+      background: #d97706;
+      color: white;
+      padding: 18px 20px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
+
+    #chat-widget-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fffdf6;
+    }
+
+    #chat-widget-body p {
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+
+    #chat-widget-footer {
+      padding: 12px;
+      border-top: 1px solid #ecdcc4;
+      display: flex;
+      gap: 10px;
+      background: #fffaf0;
+    }
+
+    #chat-widget-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e0cfa6;
+      border-radius: 8px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #chat-widget-send {
+      background: #d97706;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      #chat-widget-container {
+        height: 90vh;
+        max-width: 100%;
+        margin: 0 10px;
+      }
+
+      #chat-widget-input {
+        font-size: 13px;
+      }
+
+      #chat-widget-send {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Gita Chat Widget -->
+<div id="chat-widget-container">
+  <div id="chat-widget-header">
+    <span>🕉️ Gita AI</span>
+    <button onclick="window.location.reload()" style="background:none; border:none; color:white; font-size:16px;">✖</button>
+  </div>
+  <div id="chat-widget-body">
+    <p style="background:#fff3cd; color:#856404;"><strong>🙏 Welcome, Seeker.</strong><br/>Ask your question to receive wisdom from the Bhagavad Gita.</p>
+  </div>
+  <div id="chat-widget-footer">
+    <input type="text" id="chat-widget-input" placeholder="Ask your question here...">
+    <button id="chat-widget-send">🕉️</button>
+  </div>
+</div>
+
+<script>
+  window.ChatWidgetConfig = {
+    webhook: {
+      url: 'https://martexsoftwaresai.app.n8n.cloud/webhook/c82a22a5-5e61-483d-9310-bc5f886d89fe/chat',
+      route: 'gita'
+    }
+  };
+
+  function getChatId() {
+    let chatId = sessionStorage.getItem("chatId");
+    if (!chatId) {
+      chatId = "chat_" + Math.random().toString(36).substr(2, 9);
+      sessionStorage.setItem("chatId", chatId);
+    }
+    return chatId;
+  }
+
+  document.getElementById("chat-widget-send").addEventListener("click", function () {
+    let inputField = document.getElementById("chat-widget-input");
+    let message = inputField.value.trim();
+    if (!message) return;
+
+    let chatBody = document.getElementById("chat-widget-body");
+    let userMsg = document.createElement("p");
+    userMsg.textContent = message;
+    userMsg.style.color = "#333";
+    userMsg.style.background = "#f1f1f1";
+    chatBody.appendChild(userMsg);
+
+    let chatId = getChatId();
+
+    fetch(window.ChatWidgetConfig.webhook.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chatId: chatId,
+        message: message,
+        route: window.ChatWidgetConfig.webhook.route
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+  let botReply = document.createElement("p");
+  botReply.innerHTML = (data.output || "🕉️ The Gita is silent on that.").replace(/\n/g, "<br>");
+  botReply.style.color = "#fff";
+  botReply.style.background = "#d97706";
+  chatBody.appendChild(botReply);
+  chatBody.scrollTop = chatBody.scrollHeight;
+})
+    .catch(error => console.error("Error:", error));
+
+    inputField.value = "";
+  });
+</script>
+<footer style="text-align:center; padding:12px 0; font-size:14px; color:#666; background:#f9f9f9; border-top:1px solid #ddd;">
+  © 2025 <a href="https://martxai.tech" target="_blank" rel="noopener noreferrer" style="color:#666; text-decoration:none;">MarteX Software Enterprises</a>
+</footer>
+
+
+</body>
+</html>
